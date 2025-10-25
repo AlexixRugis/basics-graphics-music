@@ -74,17 +74,17 @@ module lab_top
     // How do you change the speed of LED blinking?
     // Try different bit slices to display.
 
-    localparam w_cnt = $clog2 (clk_mhz * 1000 * 1000);
+    // localparam w_cnt = $clog2 (clk_mhz * 1000 * 1000);
 
-    logic [w_cnt - 1:0] cnt;
+    // logic [w_cnt - 1:0] cnt;
 
-    always_ff @ (posedge clk or posedge rst)
-        if (rst)
-            cnt <= '0;
-        else
-            cnt <= cnt + 1'd1;
+    // always_ff @ (posedge clk or posedge rst)
+    //     if (rst)
+    //         cnt <= '0;
+    //     else
+    //         cnt <= cnt + 1'd1;
 
-    assign led = cnt [$left (cnt) -: w_led];
+    // assign led = cnt [$left (cnt) - 2 -: w_led];
 
     // Exercise 2: Key-controlled counter.
     // Comment out the code above.
@@ -98,30 +98,37 @@ module lab_top
     // 2. Two counters controlled by different keys
     // displayed in different groups of LEDs.
 
-    /*
+    wire keyIncr = key[0];
+    wire keyDecr = key[1];
 
-    wire any_key = | key;
-
-    logic any_key_r;
+    logic keyIncr_r;
+    logic keyDecr_r;
 
     always_ff @ (posedge clk or posedge rst)
-        if (rst)
-            any_key_r <= '0;
-        else
-            any_key_r <= any_key;
+        if (rst) begin
+            keyIncr_r <= 'd0;
+            keyDecr_r <= 'd0;
+        end
+        else begin
+            keyIncr_r <= keyIncr;
+            keyDecr_r <= keyDecr;
+        end
 
-    wire any_key_pressed = ~ any_key & any_key_r;
+    wire keyIncrPressed = ~keyIncr & keyIncr_r;
+    wire keyDecrPressed = ~keyDecr & keyDecr_r;
 
     logic [w_led - 1:0] cnt;
 
     always_ff @ (posedge clk or posedge rst)
         if (rst)
             cnt <= '0;
-        else if (any_key_pressed)
+        else if (keyIncrPressed)
             cnt <= cnt + 1'd1;
+        else if (keyDecrPressed)
+            cnt <= cnt - 1'd1;
 
     assign led = w_led' (cnt);
 
-    */
+    
 
 endmodule

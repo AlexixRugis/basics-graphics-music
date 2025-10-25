@@ -78,7 +78,7 @@ module lab_top
         else
             cnt <= cnt + 1'd1;
 
-    wire enable = (cnt [22:0] == '0);
+    wire enable = (cnt [15:0] == '0);
 
     //------------------------------------------------------------------------
 
@@ -118,10 +118,10 @@ module lab_top
 
     always_comb
       case (4' (shift_reg))
-      4'b1000: letter = F;
-      4'b0100: letter = P;
-      4'b0010: letter = G;
-      4'b0001: letter = A;
+      4'b1000: letter = A;
+      4'b0100: letter = G;
+      4'b0010: letter = P;
+      4'b0001: letter = F;
       default: letter = space;
       endcase
 

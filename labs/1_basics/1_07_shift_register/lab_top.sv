@@ -1,3 +1,4 @@
+`define EMULATE_DYNAMIC_7SEG_ON_STATIC_WITHOUT_STICKY_FLOPS
 `include "config.svh"
 
 module lab_top
@@ -59,9 +60,9 @@ module lab_top
 
     //------------------------------------------------------------------------
 
-    // assign led        = '0;
-       assign abcdefgh   = '0;
-       assign digit      = '0;
+     assign led        = '0;
+       //assign abcdefgh   = '0;
+       //assign digit      = '0;
        assign red        = '0;
        assign green      = '0;
        assign blue       = '0;
@@ -84,15 +85,22 @@ module lab_top
 
     wire button_on = | key;
 
-    logic [w_led - 1:0] shift_reg;
+    localparam w_ss = 8;
+    logic [w_ss - 1:0] shift_reg;
 
     always_ff @ (posedge clk or posedge rst)
         if (rst)
-            shift_reg <= '1;
+            shift_reg <= 'b1;
         else if (enable)
-            shift_reg <= { button_on, shift_reg [w_led - 1:1] };
+            shift_reg <= { shift_reg [w_ss - 2:0], shift_reg[w_ss - 1] };
 
-    assign led = shift_reg;
+    //assign led = shift_reg;
+    assign digit = (|shift_reg[3:0]) ? 2'b01 : 2'b10;
+
+    wire [7:0] dig0 = { shift_reg[3:0], 4'b0 };
+    wire [7:0] dig1 = { shift_reg[4], 2'b0, shift_reg[7:5], 2'b0 };
+
+    assign abcdefgh = (|shift_reg[3:0]) ? dig0 : dig1;
 
     // Exercise 1: Make the light move in the opposite direction.
 

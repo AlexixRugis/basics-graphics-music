@@ -62,110 +62,73 @@ module lab_top
     // assign led        = '0;
     // assign abcdefgh   = '0;
     // assign digit      = '0;
-       assign red        = '0;
-       assign green      = '0;
-       assign blue       = '0;
+    // assign red        = '0;
+    // assign green      = '0;
+    // assign blue       = '0;
        assign sound      = '0;
        assign uart_tx    = '1;
 
     //------------------------------------------------------------------------
 
-    localparam w_in = 8;
-    logic [w_in - 1:0] in;
-
-    generate
-        if (w_key < w_in && w_sw >= w_in)
-        begin : use_switches
-            assign in = w_in' (sw);
-        end
-        else
-        begin : use_keys
-            assign in = w_in' (key);
-        end
-    endgenerate
-
-    //------------------------------------------------------------------------
-
-    wire my_rst = in [0];
-
-    //------------------------------------------------------------------------
-
-    logic [w_led - 1:0] cnt1;
-
-    always_ff @ (posedge slow_clk)
-        if (my_rst)
-            cnt1 <= '0;
-        else
-            cnt1 <= cnt1 + 1'd1;
-
-    //------------------------------------------------------------------------
-
-    logic [31:0] cnt2;
+    logic [19:0] cnt_e;
 
     always_ff @ (posedge clk)
         if (rst)
-            cnt2 <= '0;
+            cnt_e <= '0;
         else
-            cnt2 <= cnt2 + 1'd1;
-
-    wire [w_led - 1:0] out2_1 = cnt2 [31 -: w_led];
-    wire [w_led - 1:0] out2_2 = cnt2 [23 -: w_led];
-    wire [w_led - 1:0] out2_3 = cnt2 [19 -: w_led];
-
-    //------------------------------------------------------------------------
-
-    wire enable1 = cnt2 [19:0];
+            cnt_e <= cnt_e + 1'd1;
 
     // 2 ** 20 = (2 ** 10) * (2 ** 10) = 1024 * 1024 = approximate 1000000.
     // For 27 MHz clock:
-    // 27 MHz 27000000 / 2 ** 20 = 27 times a cnt2 [19:0] overflows.
+    // 27 MHz 27000000 / 2 ** 20 = 27 times a cnt_e overflows.
 
-    logic [w_led - 1:0] cnt3;
-
-    always_ff @ (posedge clk)
-        if (rst)
-            cnt3 <= '0;
-        else if (enable1)
-            cnt3 <= cnt3 + 1'd1;
+    wire enable = (cnt_e == '0);
 
     //------------------------------------------------------------------------
 
-    logic enable2;
-
-    strobe_gen # (.clk_mhz (clk_mhz), .strobe_hz (5))
-    i_strobe_gen (clk, rst, enable2);
-
-    logic [w_led - 1:0] cnt4;
-
-    always_ff @ (posedge clk)
-        if (rst)
-            cnt4 <= '0;
-        else if (enable2)
-            cnt4 <= cnt4 + 1'd1;
-
-    //------------------------------------------------------------------------
-
-    logic [w_led - 1:0] out;
+    logic [w_x - 1:0] cnt1, cnt1_d;
+    logic [w_y - 1:0] cnt2, cnt2_d;
 
     always_comb
-        case (in [3:1])
-        3'd1:    out = cnt1;
-        3'd2:    out = out2_1;
-        3'd3:    out = out2_2;
-        3'd4:    out = out2_3;
-        3'd5:    out = cnt3;
-        3'd6:    out = cnt4;
-        default: out = out2_1;
-        endcase
+    begin
+        cnt1_d = (cnt1 == w_x' (screen_width - 1)) ? '0 : cnt1 + 1'd1;
 
-    assign led = out;
+        if (cnt2 == '0 | cnt2 == w_y' (screen_height - 1))
+            cnt2_d = w_y' (screen_height / 2);
+        else
+            cnt2_d = cnt2 + key [0] - (| key [w_key - 1:1]);
+
+        red   = '0;
+        green = '0;
+        blue  = '0;
+
+        if (x > cnt1)
+            red = '1;
+
+        if (y > cnt2)
+            green = '1;
+    end
+
+    //------------------------------------------------------------------------
+
+    always_ff @ (posedge clk)
+        if (rst)
+        begin
+            cnt1 <= '0;
+            cnt2 <= w_y' (screen_height / 2);
+        end
+        else if (enable)
+        begin
+            cnt1 <= cnt1_d;
+            cnt2 <= cnt2_d;
+        end
 
     //------------------------------------------------------------------------
 
     localparam w_number = w_digit * 4;
 
-    wire [w_number - 1:0] number
-        = | in ? w_number' (out) : w_number' (cnt2);
+    logic [w_number - 1:0] number
+        = w_number' ({ 16' (cnt1), 16' (cnt2) });
 
     seven_segment_display # (.w_digit (w_digit)) i_7segment
     (

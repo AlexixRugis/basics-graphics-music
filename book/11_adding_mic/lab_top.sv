@@ -59,7 +59,7 @@ module lab_top
 
     //------------------------------------------------------------------------
 
-    // assign led        = '0;
+       assign led        = '0;
     // assign abcdefgh   = '0;
     // assign digit      = '0;
     // assign red        = '0;
@@ -97,16 +97,6 @@ module lab_top
             cnt2_d = w_y' (screen_height / 2);
         else
             cnt2_d = cnt2 + key [0] - (| key [w_key - 1:1]);
-
-        red   = '0;
-        green = '0;
-        blue  = '0;
-
-        if (x > cnt1)
-            red = '1;
-
-        if (y > cnt2)
-            green = '1;
     end
 
     //------------------------------------------------------------------------
@@ -125,19 +115,69 @@ module lab_top
 
     //------------------------------------------------------------------------
 
-    localparam w_number = w_digit * 4;
+    logic       note_vld;
+    logic [3:0] note_idx, sticky_note;
 
-    wire [w_number - 1:0] number
-        = w_number' ({ 16' (cnt1), 16' (cnt2) });
-
-    seven_segment_display # (.w_digit (w_digit)) i_7segment
+      note_recognizer
+    # (.clk_mhz (clk_mhz))
+    i_note_recognizer
     (
-        .clk      ( clk      ),
-        .rst      ( rst      ),
-        .number   ( number   ),
-        .dots     ( '0       ),
-        .abcdefgh ( abcdefgh ),
-        .digit    ( digit    )
+        .clk,
+        .rst,
+
+        .mic,
+
+        .note_vld,
+        .note_idx,
+
+        .abcdefgh
     );
+
+    assign digit = '1;
+
+    always_ff @ (posedge clk)
+        if (rst)
+            sticky_note <= '0;
+        else if (note_vld)
+            sticky_note <= note_idx;
+
+    //------------------------------------------------------------------------
+
+    always_comb
+    begin
+        red   = '0;
+        green = '0;
+        blue  = '0;
+
+        case (sticky_note)
+        4'd0, 4'd3, 4'd6, 4'd9:
+
+            if (x < cnt1)
+            begin
+                red   = (x + y) >> 3;
+                green = (x - y) >> 3;
+                blue  = x >> 3;
+            end
+
+        4'd1, 4'd4, 4'd7, 4'd10:
+
+            if (x * y < cnt2 ** 2)
+            begin
+                red   = x >> 3;
+                green = y >> 3;
+                blue  = '1;
+            end
+
+        4'd2, 4'd5, 4'd8, 4'd11:
+
+            if ((x - cnt1) ** 2 + (y - cnt2) ** 2 < (screen_width * screen_height) / 12)
+            begin
+                red   = '1;
+                green = '1;
+                blue  = (x + y) >> 3;
+            end
+
+        endcase
+    end
 
 endmodule

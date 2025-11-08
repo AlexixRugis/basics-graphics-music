@@ -76,7 +76,7 @@ module game_top
         end
     end
 
-    assign sprite_target_write_y  = screen_height / 10 + random [5:0];
+    assign sprite_target_write_y  = screen_height / 10 + random [6:0];
     assign sprite_target_write_dy = 1'd0;
 
     //------------------------------------------------------------------------
@@ -89,14 +89,14 @@ module game_top
         .DX_WIDTH      ( 2 ),
         .DY_WIDTH      ( 1 ),
 
-        .ROW_0 ( 32'h000bb000 ),
-        .ROW_1 ( 32'h00099000 ),
-        .ROW_2 ( 32'h00099000 ),
-        .ROW_3 ( 32'hb99ff99b ),
-        .ROW_4 ( 32'hb99ff99b ),
-        .ROW_5 ( 32'h00099000 ),
-        .ROW_6 ( 32'h00099000 ),
-        .ROW_7 ( 32'h000bb000 ),
+        .ROW_0 ( 32'h0c0bb0c0 ),
+        .ROW_1 ( 32'hc00cc00c ),
+        .ROW_2 ( 32'h000cc000 ),
+        .ROW_3 ( 32'hbccffccb ),
+        .ROW_4 ( 32'hbccffccb ),
+        .ROW_5 ( 32'h000cc000 ),
+        .ROW_6 ( 32'hc00cc00c ),
+        .ROW_7 ( 32'h0c0bb0c0 ),
 
         .screen_width
         (screen_width),
@@ -169,7 +169,7 @@ module game_top
     //------------------------------------------------------------------------
 
     assign sprite_torpedo_write_x  = screen_width / 2 + random [15:10];
-    assign sprite_torpedo_write_y  = screen_height - 16;
+    assign sprite_torpedo_write_y  = screen_height - 16 - random[5:0];
 
     always_comb
     begin
@@ -198,14 +198,14 @@ module game_top
         .DX_WIDTH      ( 2 ),
         .DY_WIDTH      ( 3 ),
 
-        .ROW_0 ( 32'h000cc000 ),
-        .ROW_1 ( 32'h00cccc00 ),
-        .ROW_2 ( 32'h0cceecc0 ),
-        .ROW_3 ( 32'hcccccccc ),
-        .ROW_4 ( 32'hcc0cc0cc ),
-        .ROW_5 ( 32'hcc0cc0cc ),
-        .ROW_6 ( 32'hcc0cc0cc ),
-        .ROW_7 ( 32'hcc0cc0cc ),
+        .ROW_0 ( 32'h00099000 ),
+        .ROW_1 ( 32'h00999900 ),
+        .ROW_2 ( 32'h099ee990 ),
+        .ROW_3 ( 32'h99999999 ),
+        .ROW_4 ( 32'h00099000 ),
+        .ROW_5 ( 32'h00099000 ),
+        .ROW_6 ( 32'h00099000 ),
+        .ROW_7 ( 32'h00099000 ),
 
         .screen_width
         (screen_width),

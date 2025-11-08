@@ -11,10 +11,13 @@ module snail_mealy_fsm
     output y
 );
 
-    typedef enum bit
+    typedef enum logic [2:0]
     {
-        S0 = 1'd0,
-        S1 = 1'd1
+        S_N = 3'd0,
+        S_1 = 3'd1,
+        S_10 = 3'd2,
+        S_101 = 3'd3,
+        S_1011 = 3'd4
     }
     state_e;
 
@@ -24,7 +27,7 @@ module snail_mealy_fsm
 
     always_ff @ (posedge clk or posedge rst)
         if (rst)
-            state <= S0;
+            state <= S_N;
         else if (en)
             state <= next_state;
 
@@ -35,13 +38,19 @@ module snail_mealy_fsm
         next_state = state;
 
         case (state)
-        S0: if (~ a) next_state = S1;
-        S1: if (  a) next_state = S0;
+        S_N: if (a) next_state = S_1;
+        S_1: if (~a) next_state = S_10;
+        S_10: if (a) next_state = S_101;
+              else next_state = S_N;
+        S_101: if (a) next_state = S_1011;
+               else next_state = S_10;
+        S_1011: if (~a) next_state = S_10;
+                else next_state = S_1;
         endcase
     end
 
     // Output logic based on current state and inputs
 
-    assign y = (a & state == S1);
+    assign y = (~a & state == S_1011);
 
 endmodule
